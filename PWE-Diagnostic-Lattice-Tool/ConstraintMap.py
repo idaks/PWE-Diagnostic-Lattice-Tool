@@ -1,4 +1,4 @@
-from .CNFProgram import CNFProgram
+from .LogicProgram import LogicProgram
 from collections import defaultdict
 from .LatticeNode import (
     Node,
@@ -23,13 +23,16 @@ class ConstraintMap:
     def check_node_num_pws(self, constraints):
         pass
 
-    def check_node_ambiguity(self, constraints):
+    def check_ambiguity(self, constraints):
         pass
 
     def check_node_eval_state(self, constraints) -> NodeEvalState:
         pass
 
-    def check_sat(self, constraints, mss_es=None, mus_es=None, mas_es=None, muas_es=None):
+    def _check_node_sat_explicit_(self, constraints):
+        pass
+
+    def _check_node_sat_implicit_(self, constraints, mss_es=None, mus_es=None, mas_es=None, muas_es=None):
         """
         Use MSS-es, MUS-es, MAS-es and MUAS-es to determine if satisfiable
         :param constraints:
@@ -39,6 +42,9 @@ class ConstraintMap:
         :param muas_es:
         :return: True/False, None if can't be determined
         """
+        pass
+
+    def check_sat(self, constraints):
         pass
 
     def get_unexplored(self):
@@ -53,14 +59,14 @@ class ConstraintMap:
     def block_up(self, constraints):
         pass
 
-    def grow(self, seed, cnf_prog: CNFProgram):
+    def grow(self, seed, cnf_prog: LogicProgram):
         pass
 
-    def shrink(self, seed, cnf_prog: CNFProgram):
+    def shrink(self, seed, cnf_prog: LogicProgram):
         pass
 
-    def grow_ambiguous(self, seed, cnf_prog: CNFProgram):
+    def grow_ambiguous(self, seed, cnf_prog: LogicProgram):
         pass
 
-    def shrink_unambiguous(self, seed, cnf_prog: CNFProgram):
+    def shrink_unambiguous(self, seed, cnf_prog: LogicProgram):
         pass

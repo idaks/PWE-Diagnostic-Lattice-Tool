@@ -1,7 +1,7 @@
 from .LatticeNode import NodeAmbiguityType
 
 
-class CNFProgram:
+class LogicProgram:
 
     def __init__(self):
         pass

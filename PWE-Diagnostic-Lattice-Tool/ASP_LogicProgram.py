@@ -1,11 +1,11 @@
-from .CNFProgram import CNFProgram
+from .LogicProgram import LogicProgram
 from PW_explorer.run_clingo import run_clingo
 from PW_explorer.run_dlv import run_dlv
 from PW_explorer.load_worlds import load_worlds
 from .LatticeNode import NodeAmbiguityType
 
 
-class ASP_CNFProgram(CNFProgram):
+class ASP_LogicProgram(LogicProgram):
 
     def __init__(self, initial_encoding: str, constraint_keyword: str='comp', reasoner: str='clingo'):
         """
@@ -13,7 +13,7 @@ class ASP_CNFProgram(CNFProgram):
         :param constraint_keyword: The arity 1 relation name to use to turn constraints on.
         :param reasoner: Reasoner to use. Choices: 'clingo' (default) or 'dlv'.
         """
-        CNFProgram.__init__(self)
+        LogicProgram.__init__(self)
         self.encoding = initial_encoding
         self.constraint_keyword = constraint_keyword
         self.reasoner = reasoner

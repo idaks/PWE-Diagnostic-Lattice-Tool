@@ -1,5 +1,5 @@
 from .ConstraintMap import ConstraintMap
-from .CNFProgram import CNFProgram
+from .LogicProgram import LogicProgram
 from PW_explorer.run_clingo import run_clingo
 from PW_explorer.load_worlds import load_worlds
 from .LatticeNode import (
@@ -55,31 +55,44 @@ class ASPConstraintMap(ConstraintMap):
     def block_up(self, n):
         self.encoding += '\n' + " ; ".join(["not comp({})".format(c) for c in set(n)]) + "."
 
-    def grow(self, seed, cnf_prog: CNFProgram, update_map_with_mss=True, update_map_with_intermediate_results=True):
-        seed = set(seed)
-        iter_set = self.constraints_set - seed
-        for c in list(iter_set):
-            if cnf_prog.check_sat(seed.union({c})):
-                seed.add(c)
+    def update_num_pws(self, constraints, num_pws, num_pws_eval_type: NumPWSType):
+        self.nodes[frozenset(constraints)].update_num_pws(num_pws=num_pws, num_pws_eval_type=num_pws_eval_type)
 
-        if update_map_with_mss:
-            self.maximal_satisfiable_constraint_subsets.add(frozenset(seed))
+    def check_node_num_pws(self, constraints):
 
-        return seed
+        # Explicit Check
+        n = frozenset(constraints)
+        if n in self.nodes:
+            num_pws, num_pws_type = self.nodes[n].get_num_pws()
+            if num_pws_type != NumPWSType.unevaluated:
+                return num_pws, num_pws_type
 
-    def shrink(self, seed, cnf_prog: CNFProgram, update_map_with_mus=True, update_map_with_intermediate_results=True):
-        seed = set(seed)
-        iter_set = seed.copy()
-        for c in iter_set:
-            if not cnf_prog.check_sat(seed.difference({c})):
-                seed.remove(c)
+        # Implicit Check
+        is_sat = self._check_node_sat_implicit_(constraints)
+        if is_sat is not None:
+            if is_sat:
+                return 1, NumPWSType.atleast
+            else:
+                return 0, NumPWSType.exact
 
-        if update_map_with_mus:
-            self.minimal_unsatisfiable_constraint_subsets.add(frozenset(seed))
+        # No idea based on current information
+        return -1, NumPWSType.unevaluated
 
-        return seed
+    def check_node_eval_state(self, constraints) -> NodeEvalState:
 
-    def _check_node_sat_(self, constraints):
+        # Explicit Check
+        n = frozenset(constraints)
+        if n in self.nodes:
+            return self.nodes[n].eval_state
+
+        # Implicit Checks
+        is_sat = self.check_sat(constraints)
+        if is_sat is not None:
+            return NodeEvalState.evaluated
+
+        return NodeEvalState.unevaluated
+
+    def _check_node_sat_explicit_(self, constraints):
         """
         explicit check in the self.nodes dict
         :param constraints:
@@ -90,7 +103,7 @@ class ASPConstraintMap(ConstraintMap):
             return self.nodes[n].is_sat()
         return None
 
-    def check_sat(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None, muas_es: set=None):
+    def _check_node_sat_implicit_(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None, muas_es: set=None):
         """
         :param n:
         :param mss_es: Set of frozensets (each frozenset corresponds to an MSS)
@@ -99,10 +112,6 @@ class ASPConstraintMap(ConstraintMap):
         :param muas_es: Set of frozensets (each frozenset corresponds to an MUAS)
         :return:
         """
-
-        k = self._check_node_sat_(n)
-        if k is not None:
-            return k
 
         if mss_es is None:
             mss_es = self.maximal_satisfiable_constraint_subsets
@@ -130,35 +139,22 @@ class ASPConstraintMap(ConstraintMap):
 
         return None
 
-    def update_num_pws(self, constraints, num_pws, num_pws_eval_type: NumPWSType):
-        self.nodes[frozenset(constraints)].update_num_pws(num_pws=num_pws, num_pws_eval_type=num_pws_eval_type)
+    def check_sat(self, constraints):
 
-    def check_node_num_pws(self, constraints):
+        k = self._check_node_sat_explicit_(constraints)
+        if k is not None:
+            return k
 
-        # Explicit Check
-        n = frozenset(constraints)
-        if n in self.nodes:
-            return self.nodes[n].get_num_pws()
+        return self._check_node_sat_implicit_(constraints)
 
-        # Implicit Check
-        is_sat = self.check_sat(constraints)
-        if is_sat is not None:
-            if is_sat:
-                return 1, NumPWSType.atleast
-            else:
-                return 0, NumPWSType.exact
-
-        # No idea based on current information
-        return -1, NumPWSType.unevaluated
-
-    def _check_node_ambiguity_(self, constraints):
+    def _check_node_ambiguity_explicit_(self, constraints):
         # explicit check in the self.nodes dict
         n = frozenset(constraints)
         if n in self.nodes:
-            return self.nodes[n].is_ambiguous
+            return self.nodes[n].is_ambiguous()
         return None
 
-    def check_ambiguity(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None, muas_es: set=None):
+    def _check_node_ambiguity_implicit_(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None, muas_es: set=None):
         """
         :param n:
         :param mss_es: Set of frozensets (each frozenset corresponds to an MSS)
@@ -170,11 +166,6 @@ class ASPConstraintMap(ConstraintMap):
 
         # AMB if ancestor of an MAS or an MUAS
         # UNSAT if descendant of an MSS or an MUS
-
-        # Explicit Check
-        k = self._check_node_ambiguity_(n)
-        if k is not None:
-            return k
 
         if mss_es is None:
             mss_es = self.maximal_satisfiable_constraint_subsets
@@ -196,43 +187,115 @@ class ASPConstraintMap(ConstraintMap):
 
         for c in mus_es.union(mss_es):
             if n >= c:
-                # UNAMB if descendant of an MSS or an MUS
+                # UNSAT if descendant of an MSS or an MUS
                 return NodeAmbiguityType.unsat
 
         return None
 
-    def check_node_eval_state(self, constraints) -> NodeEvalState:
+    def check_ambiguity(self, constraints):
 
         # Explicit Check
-        n = frozenset(constraints)
-        if n in self.nodes:
-            return self.nodes[n].eval_state
+        k = self._check_node_ambiguity_explicit_(constraints)
+        if k is not None:
+            return k
+        return self._check_node_ambiguity_implicit_(constraints)
 
-        # Implicit Checks
-        is_sat = self.check_sat(constraints)
-        if is_sat is not None:
-            return NodeEvalState.evaluated
+    def grow(self, seed, cnf_prog: LogicProgram, update_map_with_mss=True, update_map_with_intermediate_results=True):
+        seed = set(seed)
+        iter_set = self.constraints_set - seed
+        for c in list(iter_set):
+            seed_ = seed.union({c})
+            memoized_result = self._check_node_sat_explicit_(seed_)
+            if memoized_result is not None:
+                if memoized_result is True:
+                    seed.add(c)
+            else:  # memoized_result is None:
+                sat_check = cnf_prog.check_sat(seed_)
+                if sat_check:
+                    seed.add(c)
+                if update_map_with_intermediate_results:
+                    if sat_check is True:
+                        self.update_num_pws(seed_, num_pws=1, num_pws_eval_type=NumPWSType.atleast)
+                    else:  # if sat_check is False:
+                        self.update_num_pws(seed_, num_pws=0, num_pws_eval_type=NumPWSType.exact)
 
-        return NodeEvalState.unevaluated
+        if update_map_with_mss:
+            self.maximal_satisfiable_constraint_subsets.add(frozenset(seed))
 
-    def grow_ambiguous(self, seed, cnf_prog: CNFProgram, update_map_with_mas=True,
+        return seed
+
+    def shrink(self, seed, cnf_prog: LogicProgram, update_map_with_mus=True, update_map_with_intermediate_results=True):
+        seed = set(seed)
+        iter_set = seed.copy()
+        for c in iter_set:
+            seed_ = seed.difference({c})
+            memoized_result = self._check_node_sat_explicit_(seed_)
+            if memoized_result is not None:
+                if memoized_result is False:
+                    seed.remove(c)
+            else:  # memoized_result is None
+                sat_check = cnf_prog.check_sat(seed_)
+                if not sat_check:
+                    seed.remove(c)
+                if update_map_with_intermediate_results:
+                    if sat_check is True:
+                        self.update_num_pws(seed_, num_pws=1, num_pws_eval_type=NumPWSType.atleast)
+                    else:  # if sat_check is False:
+                        self.update_num_pws(seed_, num_pws=0, num_pws_eval_type=NumPWSType.exact)
+
+        if update_map_with_mus:
+            self.minimal_unsatisfiable_constraint_subsets.add(frozenset(seed))
+
+        return seed
+
+    def grow_ambiguous(self, seed, cnf_prog: LogicProgram, update_map_with_mas=True,
                        update_map_with_intermediate_results=True):
         seed = set(seed)
         iter_set = self.constraints_set - seed
         for c in list(iter_set):
-            if cnf_prog.check_ambiguity(seed.union({c})) == NodeAmbiguityType.ambiguous:
-                seed.add(c)
+            seed_ = seed.union({c})
+            memoized_result = self._check_node_ambiguity_explicit_(seed_)
+            if memoized_result is not None:
+                if memoized_result == NodeAmbiguityType.ambiguous:
+                    seed.add(c)
+            else:  # memoized_result is None
+                amb_check = cnf_prog.check_ambiguity(seed_)
+                if amb_check == NodeAmbiguityType.ambiguous:
+                    seed.add(c)
+                if update_map_with_intermediate_results:
+                    if amb_check == NodeAmbiguityType.ambiguous:
+                        self.update_num_pws(seed_, num_pws=2, num_pws_eval_type=NumPWSType.atleast)
+                    elif amb_check == NodeAmbiguityType.unambiguous:
+                        self.update_num_pws(seed_, num_pws=1, num_pws_eval_type=NumPWSType.exact)
+                    elif amb_check == NodeAmbiguityType.unsat:
+                        self.update_num_pws(seed_, num_pws=0, num_pws_eval_type=NumPWSType.exact)
+
         if update_map_with_mas:
-            self.maximal_ambiguous_constraint_subsets.add(seed)
+            self.maximal_ambiguous_constraint_subsets.add(frozenset(seed))
         return seed
 
-    def shrink_unambiguous(self, seed, cnf_prog: CNFProgram, update_map_with_muas=True,
+    def shrink_unambiguous(self, seed, cnf_prog: LogicProgram, update_map_with_muas=True,
                            update_map_with_intermediate_results=True):
         seed = set(seed)
         iter_set = seed.copy()
         for c in iter_set:
-            if cnf_prog.check_ambiguity(seed.difference({c})) == NodeAmbiguityType.unambiguous:
-                seed.remove(c)
+            seed_ = seed.difference({c})
+            memoized_result = self._check_node_ambiguity_explicit_(seed_)
+            if memoized_result is not None:
+                if memoized_result == NodeAmbiguityType.unambiguous:
+                    seed.remove(c)
+            else:  # memoized_result is None
+                amb_check = cnf_prog.check_ambiguity(seed_)
+                if amb_check == NodeAmbiguityType.unambiguous:
+                    seed.remove(c)
+                if update_map_with_intermediate_results:
+                    if amb_check == NodeAmbiguityType.ambiguous:
+                        self.update_num_pws(seed_, num_pws=2, num_pws_eval_type=NumPWSType.atleast)
+                    elif amb_check == NodeAmbiguityType.unambiguous:
+                        self.update_num_pws(seed_, num_pws=1, num_pws_eval_type=NumPWSType.exact)
+                    elif amb_check == NodeAmbiguityType.unsat:
+                        self.update_num_pws(seed_, num_pws=0, num_pws_eval_type=NumPWSType.exact)
+
         if update_map_with_muas:
-            self.minimal_unambiguous_constraint_subsets.add(seed)
+            self.minimal_unambiguous_constraint_subsets.add(frozenset(seed))
         return seed
