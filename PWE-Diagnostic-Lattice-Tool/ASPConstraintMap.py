@@ -20,7 +20,6 @@ class ASPConstraintMap(ConstraintMap):
         ConstraintMap.__init__(self, constraints)
         self.constraints_set = set(constraints)
         self.encoding = "\n".join(["comp({0}) ; not comp({0}).".format(c) for c in self.constraints])
-        self.nodes = defaultdict(Node)
 
     def get_unexplored(self):
         map_soln, _ = run_clingo(self.encoding, num_solutions=1)
@@ -154,7 +153,8 @@ class ASPConstraintMap(ConstraintMap):
             return self.nodes[n].is_ambiguous()
         return None
 
-    def _check_node_ambiguity_implicit_(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None, muas_es: set=None):
+    def _check_node_ambiguity_implicit_(self, n, mss_es: set=None, mus_es: set=None, mas_es: set=None,
+                                        muas_es: set=None):
         """
         :param n:
         :param mss_es: Set of frozensets (each frozenset corresponds to an MSS)

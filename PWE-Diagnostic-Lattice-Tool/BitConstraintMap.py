@@ -13,13 +13,12 @@ from .PowersetBitLib import PowersetBitLib
 
 class BitConstraintMap(ConstraintMap):
 
-    def __init__(self, constraints):
+    def __init__(self, constraints: list):
         ConstraintMap.__init__(self, constraints)
         self.constraints_set = set(constraints)
         self.constraint_to_int_map = dict(zip(constraints, range(self.num_constraints)))
         self.unexplored_set = set(range(2 ** self.num_constraints))
         self.explored_set = set([])
-        self.nodes = defaultdict(Node)
 
     def int_to_constraint_set(self, n):
         return [self.constraints[self.num_constraints - i - 1] for i in range(self.num_constraints - 1, -1, -1) if
@@ -215,16 +214,29 @@ class BitConstraintMap(ConstraintMap):
             return k
         return self._check_node_ambiguity_implicit_(constraints)
 
-    def get_unexplored(self):
+    def get_unexplored(self, return_seed_int=False):
+
         if len(self.unexplored_set) <= 0:
+            if return_seed_int:
+                return None, None
             return None
+
         node = first(self.unexplored_set)
+        if return_seed_int:
+            return self.int_to_constraint_set(node), node
         return self.int_to_constraint_set(node)
 
-    def get_unexplored_max(self):
+    def get_unexplored_max(self, return_seed_int=False):
+
         if len(self.unexplored_set) <= 0:
+            if return_seed_int:
+                return None, None
             return None
-        return self.int_to_constraint_set(max(self.unexplored_set, key=PowersetBitLib.get_num_set_bits))
+
+        seed = max(self.unexplored_set, key=PowersetBitLib.get_num_set_bits)
+        if return_seed_int:
+            return self.int_to_constraint_set(seed), seed
+        return self.int_to_constraint_set(seed)
 
     def block_down(self, constraints, constraints_int: int=None):
         if constraints_int is None:

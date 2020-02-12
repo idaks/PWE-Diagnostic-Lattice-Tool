@@ -1,23 +1,25 @@
 from .LogicProgram import LogicProgram
-from collections import defaultdict
 from .LatticeNode import (
     Node,
     NodeEvalState,
     NumPWSType,
+    NodeAmbiguityType,
 )
+from collections import defaultdict
 
 
 class ConstraintMap:
 
-    def __init__(self, constraints):
+    def __init__(self, constraints: list):
         self.constraints = constraints
         self.num_constraints = len(self.constraints)
         self.maximal_satisfiable_constraint_subsets = set([])
         self.minimal_unsatisfiable_constraint_subsets = set([])
         self.maximal_ambiguous_constraint_subsets = set([])
         self.minimal_unambiguous_constraint_subsets = set([])
+        self.nodes = defaultdict(Node)
 
-    def update_num_pws(self, constraints, num_pws, num_pws_eval_type: NumPWSType):
+    def update_num_pws(self, constraints, num_pws: int, num_pws_eval_type: NumPWSType):
         pass
 
     def check_node_num_pws(self, constraints):
@@ -27,21 +29,6 @@ class ConstraintMap:
         pass
 
     def check_node_eval_state(self, constraints) -> NodeEvalState:
-        pass
-
-    def _check_node_sat_explicit_(self, constraints):
-        pass
-
-    def _check_node_sat_implicit_(self, constraints, mss_es=None, mus_es=None, mas_es=None, muas_es=None):
-        """
-        Use MSS-es, MUS-es, MAS-es and MUAS-es to determine if satisfiable
-        :param constraints:
-        :param mss_es:
-        :param mus_es:
-        :param mas_es:
-        :param muas_es:
-        :return: True/False, None if can't be determined
-        """
         pass
 
     def check_sat(self, constraints):
