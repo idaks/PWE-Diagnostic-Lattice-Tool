@@ -5,6 +5,76 @@ from .LatticeNode import NodeAmbiguityType
 import numpy as np
 
 
+class DiagnosisAlgorithmsHelpers:
+
+    @staticmethod
+    def check_sat(seed, cmap: ConstraintMap, cnf_prog: LogicProgram):
+        """
+        First check against cmap if seed is SAT, if cannot be inferred from available info, then determine using the
+        cnf_prog
+        :param seed: Set of constraints
+        :param cmap: ConstraintMap Object
+        :param cnf_prog: LogicProgram Object
+        :return: bool
+        """
+        cmap_inference = cmap.check_sat(constraints=seed)
+        if cmap_inference is not None:
+            return cmap_inference
+        return cnf_prog.check_sat(constraints=seed)
+
+    @staticmethod
+    def check_sat_bit_optimized(seed, cmap: BitConstraintMap, cnf_prog: LogicProgram, seed_int: int=None):
+        """
+        First check against cmap if seed is SAT, if cannot be inferred from available info, then determine using the
+        cnf_prog.
+        Optimized for BitConstraintMaps (if seed_int is provided)
+        :param seed: Set of constraints
+        :param cmap: ConstraintMap Object
+        :param cnf_prog: LogicProgram Object
+        :param seed_int: Int representation of seed
+        :return: bool
+        """
+        cmap_inference = (cmap.check_sat(constraints=seed_int)) if (seed_int is not None) \
+            else (cmap.check_sat(constraints=seed))
+
+        if cmap_inference is not None:
+            return cmap_inference
+        return cnf_prog.check_sat(constraints=seed)
+
+    @staticmethod
+    def check_ambiguity(seed, cmap: ConstraintMap, cnf_prog: LogicProgram):
+        """
+        First check against cmap if seed is AMBIGUOUS, if cannot be inferred from available info, then determine using
+        the cnf_prog
+        :param seed: Set of constraints
+        :param cmap: ConstraintMap Object
+        :param cnf_prog: LogicProgram Object
+        :return: bool
+        """
+        cmap_inference = cmap.check_ambiguity(constraints=seed)
+        if cmap_inference is not None:
+            return cmap_inference
+        return cnf_prog.check_ambiguity(constraints=seed)
+
+    @staticmethod
+    def check_ambiguity_bit_optimized(seed, cmap: BitConstraintMap, cnf_prog: LogicProgram, seed_int: int=None):
+        """
+        First check against cmap if seed is AMBIGUOUS, if cannot be inferred from available info, then determine using
+        the cnf_prog.
+        Optimized for BitConstraintMaps (if seed_int is provided)
+        :param seed: Set of constraints
+        :param cmap: ConstraintMap Object
+        :param cnf_prog: LogicProgram Object
+        :param seed_int: Int representation of seed
+        :return: bool
+        """
+        cmap_inference = (cmap.check_ambiguity(constraints=seed_int)) if (seed_int is not None) \
+            else (cmap.check_ambiguity(constraints=seed))
+        if cmap_inference is not None:
+            return cmap_inference
+        return cnf_prog.check_ambiguity(constraints=seed)
+
+
 class DiagnosisAlgorithms:
 
     @staticmethod
