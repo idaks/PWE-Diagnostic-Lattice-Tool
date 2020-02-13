@@ -98,8 +98,7 @@ class DiagnosisAlgorithms:
         seed = cmap.get_unexplored()
         while (seed is not None) and ((len(mus_es) < min_mus_to_find) or (len(mss_es) < min_mss_to_find)):
 
-            # TODO can check satisfiability first against the cmap
-            if cnf_prog.check_sat(seed):
+            if DiagnosisAlgorithmsHelpers.check_sat(seed=seed, cmap=cmap, cnf_prog=cnf_prog):
                 mss = cmap.grow(seed, cnf_prog)
                 mss_es.append(mss)
                 cmap.block_down(mss)
@@ -135,7 +134,8 @@ class DiagnosisAlgorithms:
         seed, seed_int = cmap.get_unexplored(return_seed_int=True)  # OPT1
         while (seed is not None) and ((len(mus_es) < min_mus_to_find) or (len(mss_es) < min_mss_to_find)):
 
-            if cnf_prog.check_sat(seed):
+            if DiagnosisAlgorithmsHelpers.check_sat_bit_optimized(seed=seed, seed_int=seed_int, cmap=cmap,
+                                                                  cnf_prog=cnf_prog):
                 mss, mss_int = cmap.grow(seed=seed, cnf_prog=cnf_prog, seed_int=seed_int, return_mss_int=True)  # OPT2
                 mss_es.append(mss)
                 cmap.block_down(constraints=mss, constraints_int=mss_int)  # OPT3
@@ -170,7 +170,7 @@ class DiagnosisAlgorithms:
         seed = cmap.get_unexplored_max()
         while (seed is not None) and ((len(mus_es) < min_mus_to_find) or (len(mss_es) < min_mss_to_find)):
 
-            if cnf_prog.check_sat(seed):
+            if DiagnosisAlgorithmsHelpers.check_sat(seed=seed, cmap=cmap, cnf_prog=cnf_prog):
                 mss = seed
                 mss_es.append(mss)
                 cmap.block_down(mss)
@@ -207,7 +207,8 @@ class DiagnosisAlgorithms:
         seed, seed_int = cmap.get_unexplored_max(return_seed_int=True)  # OPT1
         while (seed is not None) and ((len(mus_es) < min_mus_to_find) or (len(mss_es) < min_mss_to_find)):
 
-            if cnf_prog.check_sat(seed):
+            if DiagnosisAlgorithmsHelpers.check_sat_bit_optimized(seed=seed, seed_int=seed_int, cmap=cmap,
+                                                                  cnf_prog=cnf_prog):
                 mss, mss_int = seed, seed_int  # OPT2
                 mss_es.append(mss)
                 cmap.block_down(constraints=mss, constraints_int=mss_int)  # OPT3
@@ -246,8 +247,7 @@ class DiagnosisAlgorithms:
         seed = cmap.get_unexplored()
         while (seed is not None) and ((len(muas_es) < min_muas_to_find) or (len(mas_es) < min_mas_to_find)):
 
-            # TODO can check satisfiability first against the cmap
-            amb_check = cnf_prog.check_ambiguity(seed)
+            amb_check = DiagnosisAlgorithmsHelpers.check_ambiguity(seed=seed, cmap=cmap, cnf_prog=cnf_prog)
 
             if amb_check == NodeAmbiguityType.unambiguous:
                 muas = cmap.shrink_unambiguous(seed, cnf_prog)
@@ -292,7 +292,8 @@ class DiagnosisAlgorithms:
         seed, seed_int = cmap.get_unexplored(return_seed_int=True)  # OPT1
         while (seed is not None) and ((len(muas_es) < min_muas_to_find) or (len(mas_es) < min_mas_to_find)):
 
-            amb_check = cnf_prog.check_ambiguity(seed)
+            amb_check = DiagnosisAlgorithmsHelpers.check_ambiguity_bit_optimized(seed=seed, seed_int=seed_int,
+                                                                                 cmap=cmap, cnf_prog=cnf_prog)
 
             if amb_check == NodeAmbiguityType.unambiguous:
                 # OPT2
@@ -338,7 +339,7 @@ class DiagnosisAlgorithms:
         seed = cmap.get_unexplored_max()
         while (seed is not None) and ((len(muas_es) < min_muas_to_find) or (len(mas_es) < min_mas_to_find)):
 
-            amb_check = cnf_prog.check_ambiguity(seed)
+            amb_check = DiagnosisAlgorithmsHelpers.check_ambiguity(seed=seed, cmap=cmap, cnf_prog=cnf_prog)
 
             if amb_check == NodeAmbiguityType.unambiguous:
                 muas = cmap.shrink_unambiguous(seed, cnf_prog)
@@ -384,7 +385,8 @@ class DiagnosisAlgorithms:
         seed, seed_int = cmap.get_unexplored_max(return_seed_int=True)  # OPT1
         while (seed is not None) and ((len(muas_es) < min_muas_to_find) or (len(mas_es) < min_mas_to_find)):
 
-            amb_check = cnf_prog.check_ambiguity(seed)
+            amb_check = DiagnosisAlgorithmsHelpers.check_ambiguity_bit_optimized(seed=seed, seed_int=seed_int,
+                                                                                 cmap=cmap, cnf_prog=cnf_prog)
 
             if amb_check == NodeAmbiguityType.unambiguous:
                 # OPT2
