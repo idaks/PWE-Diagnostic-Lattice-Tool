@@ -19,6 +19,9 @@ class ConstraintMap:
         self.minimal_unambiguous_constraint_subsets = set([])
         self.nodes = defaultdict(Node)
 
+    def reset_explored_set(self):
+        pass
+
     def update_num_pws(self, constraints, num_pws: int, num_pws_eval_type: NumPWSType):
         pass
 

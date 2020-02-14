@@ -6,7 +6,6 @@ from .LatticeNode import (
     NumPWSType,
     NodeAmbiguityType,
 )
-from collections import defaultdict
 import itertools
 from iteration_utilities import first
 from .PowersetBitLib import PowersetBitLib
@@ -23,6 +22,10 @@ class BitConstraintMap(ConstraintMap):
         self.satisfiable_set = set([])
         self.unsatisfiable_set = set([])
         self.ambiguous_set = set([])
+
+    def reset_explored_set(self):
+        self.unexplored_set = set(range(2 ** self.num_constraints))
+        self.explored_set = set([])
 
     def int_to_constraint_set(self, n):
         return [self.constraints[self.num_constraints - i - 1] for i in range(self.num_constraints - 1, -1, -1) if

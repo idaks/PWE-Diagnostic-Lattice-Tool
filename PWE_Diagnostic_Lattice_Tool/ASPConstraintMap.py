@@ -19,6 +19,10 @@ class ASPConstraintMap(ConstraintMap):
     def __init__(self, constraints):
         ConstraintMap.__init__(self, constraints)
         self.constraints_set = set(constraints)
+        self.encoding = ""
+        self.reset_explored_set()
+
+    def reset_explored_set(self):
         self.encoding = "\n".join(["comp({0}) ; not comp({0}).".format(c) for c in self.constraints])
 
     def get_unexplored(self):
