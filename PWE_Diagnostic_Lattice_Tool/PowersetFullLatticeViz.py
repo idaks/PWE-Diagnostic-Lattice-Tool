@@ -3,8 +3,6 @@ from .BitConstraintMap import BitConstraintMap
 from .PowersetBitLib import PowersetBitLib
 from .LatticeNode import NumPWSType
 import networkx as nx
-import itertools
-import numpy as np
 
 
 class PowersetFullLatticeViz:
@@ -138,7 +136,7 @@ class PowersetFullLatticeViz:
 
         return label
 
-    def color_and_label_lattice(self, display_num_pws=False, label_format='bitstring', highlight='MUS-MSS',
+    def color_and_label_lattice(self, display_num_pws=False, label_format='bitstring', to_highlight=('MUS', 'MSS'),
                                 colorscheme=None):
 
         if colorscheme is None:
@@ -150,14 +148,16 @@ class PowersetFullLatticeViz:
         for e in self.full_lattice.edges:
             self.update_edge_style(e, self.get_edge_style(e, colorscheme))
 
-        if highlight == 'MUS-MSS':
+        if 'MSS' in to_highlight:
             for n in self.cmap.maximal_satisfiable_constraint_subsets:
                 self.update_node_style(n, colorscheme['mss_node'])
+        if 'MUS' in to_highlight:
             for n in self.cmap.minimal_unsatisfiable_constraint_subsets:
                 self.update_node_style(n, colorscheme['mus_node'])
-        elif highlight == 'MUAS-MAS':
+        if 'MAS' in to_highlight:
             for n in self.cmap.maximal_ambiguous_constraint_subsets:
                 self.update_node_style(n, colorscheme['mas_node'])
+        if 'MUAS' in to_highlight:
             for n in self.cmap.minimal_unambiguous_constraint_subsets:
                 self.update_node_style(n, colorscheme['muas_node'])
 
@@ -210,8 +210,9 @@ class PowersetFullLatticeViz:
         for i, label in int_to_label_dict.items():
             self.full_lattice.nodes[i]['label'] = label
 
-    def get_full_lattice(self, display_num_pws=False, label_format='bitstring', highlight='MUS-MSS', colorscheme=None):
-        self.color_and_label_lattice(display_num_pws, label_format, highlight, colorscheme)
+    def get_full_lattice(self, display_num_pws=False, label_format='bitstring', to_highlight=('MUS', 'MSS'),
+                         colorscheme=None):
+        self.color_and_label_lattice(display_num_pws, label_format, to_highlight, colorscheme)
         return self.full_lattice
 
     @staticmethod

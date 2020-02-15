@@ -28,6 +28,10 @@ class ASP_LogicProgram(LogicProgram):
         pw_rel_dfs, rel_schemas, pws = load_worlds(map_soln, silent=True)
         return pw_rel_dfs, rel_schemas, pws
 
+    def get_num_solutions(self, constraints: list):
+        _, _, pws = self.run_reasoner(constraints=constraints, num_pws=0)
+        return len(pws)
+
     def check_sat(self, constraints):
 
         _, _, pws = self.run_reasoner(constraints, num_pws=1)

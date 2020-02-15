@@ -80,7 +80,8 @@ class BitConstraintMap(ConstraintMap):
     def _check_node_num_pws_implicit_(self, constraints):
 
         n = self.__constraints_to_int_helper__(constraints)
-        is_sat = self._check_node_sat_implicit_(n)
+        # is_sat = self._check_node_sat_implicit_(n)
+        is_sat = self._check_node_sat_explicit_(n)
         if is_sat is not None:
             if is_sat:
                 return 1, NumPWSType.atleast
@@ -112,10 +113,14 @@ class BitConstraintMap(ConstraintMap):
         if n in self.nodes:
             return self.nodes[n].eval_state
 
-        # Implicit Checks
-        is_sat = self._check_node_sat_implicit_(n)
+        is_sat = self._check_node_sat_explicit_(n)
         if is_sat is not None:
             return NodeEvalState.evaluated
+
+        # # Implicit Checks
+        # is_sat = self._check_node_sat_implicit_(n)
+        # if is_sat is not None:
+        #     return NodeEvalState.evaluated
 
         return NodeEvalState.unevaluated
 
@@ -538,7 +543,7 @@ class BitConstraintMap(ConstraintMap):
             num_pws[n] = (1, NumPWSType.exact)
 
         pot_missed_nodes = set(itertools.chain.from_iterable(
-            PowersetBitLib.get_descendants(n, 4) for n in self.minimal_unambiguous_constraint_subsets)
+            PowersetBitLib.get_descendants(n, self.num_constraints) for n in self.minimal_unambiguous_constraint_subsets)
         ).difference(self.minimal_unambiguous_constraint_subsets)\
             .difference(self.satisfiable_set)\
             .difference(self.unsatisfiable_set)
