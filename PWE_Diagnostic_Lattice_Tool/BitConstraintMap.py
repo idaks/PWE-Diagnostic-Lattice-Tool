@@ -7,7 +7,7 @@ from .LatticeNode import (
     NodeAmbiguityType,
 )
 import itertools
-from iteration_utilities import first
+import random
 from .PowersetBitLib import PowersetBitLib
 
 
@@ -296,7 +296,7 @@ class BitConstraintMap(ConstraintMap):
                 return None, None
             return None
 
-        node = first(self.unexplored_set)
+        node = random.sample(self.unexplored_set, 1)
         if return_seed_int:
             return self.int_to_constraint_set(node), node
         return self.int_to_constraint_set(node)
