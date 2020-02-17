@@ -296,7 +296,7 @@ class BitConstraintMap(ConstraintMap):
                 return None, None
             return None
 
-        node = random.sample(self.unexplored_set, 1)
+        node = random.sample(self.unexplored_set, 1)[0]
         if return_seed_int:
             return self.int_to_constraint_set(node), node
         return self.int_to_constraint_set(node)

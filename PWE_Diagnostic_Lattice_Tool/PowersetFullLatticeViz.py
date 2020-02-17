@@ -128,7 +128,7 @@ class PowersetFullLatticeViz:
         label_format_to_func = {
             'bitstring': lambda x: PowersetFullLatticeViz.int_to_bit_string(x, self.cmap.num_constraints),
             'int': lambda x: str(x),
-            'comp_string': lambda x: " ".join(self.cmap.int_to_constraint_set(x)),
+            'comp_string': lambda x: "{{{}}}".format(", ".join(self.cmap.int_to_constraint_set(x))),
         }
 
         label = label_format_to_func[label_format](n) + ('\n({})'.format(num_pws_to_str(*self.num_pws[n]))

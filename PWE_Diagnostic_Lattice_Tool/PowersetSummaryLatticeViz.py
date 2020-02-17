@@ -118,11 +118,12 @@ class PowersetSummaryLatticeViz:
         label_format_to_func = {
             'bitstring': lambda x: self.int_to_bit_string(x),
             'int': lambda x: str(x),
-            'comp_string': lambda x: " ".join(self.cmap.int_to_constraint_set(x)),
+            'comp_string': lambda x: "{{{}}}".format(", ".join(self.cmap.int_to_constraint_set(x))),
         }
 
-        label = label_format_to_func[label_format](n) + ('\n({})'.format(num_pws_to_str(*self.num_pws[n]))
-                                                         if display_num_pws else '')
+        label = label_format_to_func[label_format](n)
+        if display_num_pws:
+            label += '\n({})'.format(num_pws_to_str(*self.num_pws[n]))
 
         return label
 
