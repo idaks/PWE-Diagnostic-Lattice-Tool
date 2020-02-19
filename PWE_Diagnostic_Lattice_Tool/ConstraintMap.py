@@ -60,3 +60,7 @@ class ConstraintMap:
 
     def shrink_unambiguous(self, seed, cnf_prog: LogicProgram):
         pass
+
+    def get_num_pws(self, seed, cnf_prog: LogicProgram):
+        # TODO
+        pass

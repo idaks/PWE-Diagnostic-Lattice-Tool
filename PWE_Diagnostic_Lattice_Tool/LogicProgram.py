@@ -16,3 +16,6 @@ class LogicProgram:
         NodeAmbiguityType.unambiguous == 2 --> AMBIGUOUS   (SAT)
         """
         pass
+
+    def get_num_solutions(self, constraints) -> int:
+        pass

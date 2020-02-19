@@ -68,7 +68,7 @@ class PowersetSummaryLatticeViz:
             'arrowhead': 'none',
             'colorscheme': 'paired12',
             'color': 9,
-        }
+        },
     }
 
     def __init__(self, cmap: BitConstraintMap):
@@ -178,7 +178,7 @@ class PowersetSummaryLatticeViz:
 
         # The order in which the nodes are added is important, i.e. Null --> MUS --> MUAS --> MAS --> MSS
         # Else the output might not be correct
-        self.summary_lattice.add_node(self.null_node, **colorscheme['sat_node'])  # Must be SAT
+        self.summary_lattice.add_node(self.all_node, **self.get_node_style(self.all_node, colorscheme=colorscheme))
         if 'MUS' in to_highlight:
             self.summary_lattice.add_nodes_from(self.mus_es, **colorscheme['mus_node'])
             self.lattice_nodes.update(self.mus_es)
@@ -191,7 +191,7 @@ class PowersetSummaryLatticeViz:
         if 'MSS' in to_highlight:
             self.summary_lattice.add_nodes_from(self.mss_es, **colorscheme['mss_node'])
             self.lattice_nodes.update(self.mss_es)
-        self.summary_lattice.add_node(self.all_node, **self.get_node_style(self.all_node, colorscheme=colorscheme))
+        self.summary_lattice.add_node(self.null_node, **colorscheme['sat_node'])  # Must be SAT
 
         for n in self.lattice_nodes:
 

@@ -244,7 +244,7 @@ class PowersetFullLatticeViz:
 
         g = nx.Graph()
 
-        g.add_nodes_from(range(2**num_constraints))
+        g.add_nodes_from(reversed(range(2**num_constraints)))
 
         for n in range(2**num_constraints):
             g.nodes[n]['label'] = PowersetFullLatticeViz.int_to_bit_string(n, num_constraints)
