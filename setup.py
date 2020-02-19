@@ -8,7 +8,7 @@ with open('requirements.txt', 'r') as fh:
 
 setuptools.setup(
     name="PWE_Diagnostic_Lattice_Tool",
-    version="0.0.1",
+    version="0.0.2",
     author="Sahil Gupta",
     author_email="",
     description="Companion Tool to PWE for problems with switchable constraints.",
